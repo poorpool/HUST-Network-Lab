@@ -8,13 +8,13 @@ import java.util.Properties;
 public class ServerUtils {
     private static String localIp;
     private static int port;
-    private static String basePath;
+    private static String basePath;  // web 服务器基础路径
 
     public static boolean load() {
         try {
             InputStream in = new BufferedInputStream(new FileInputStream("config.properties"));
             Properties prop = new Properties();
-            prop.load(new InputStreamReader(in, StandardCharsets.UTF_8));
+            prop.load(new InputStreamReader(in, StandardCharsets.UTF_8));  // 中文支持
             localIp = prop.getProperty("LocalIp");
             port = Integer.parseInt(prop.getProperty("Port"));
             basePath = prop.getProperty("BasePath");

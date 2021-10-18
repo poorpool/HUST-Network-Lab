@@ -10,15 +10,15 @@ import java.nio.file.Paths;
 
 public class Response {
     private OutputStream outputStream;
-    private int statusCode;
-    private File willFile;
+    private int statusCode;  // 返回的 HTTP 状态码
+    private File willFile;  // 期待的返回文件
 
     public Response(OutputStream outputStream) {
         this.outputStream = outputStream;
     }
 
     public void constructResponse(Request request) {
-        // parse 失败和非 get 都是 bad request
+        // parse 失败和非 get 都是 400 bad request
         if (!request.isParseSuccess()) {
             statusCode = 400;
             return;
@@ -31,7 +31,7 @@ public class Response {
         Path willPath = Paths.get(ServerUtils.getBasePath(), Paths.get(request.getUri()).normalize().toString()).normalize();
         willFile = willPath.toFile();
         System.out.println("Want " + willPath);
-        if (willFile.isDirectory()) {
+        if (willFile.isDirectory()) {  // 目录默认为 index.html
             willFile = Paths.get(willPath.toString(), "index.html").normalize().toFile();
             System.out.println("...But it is a directory, try " + willFile.toString());
         }

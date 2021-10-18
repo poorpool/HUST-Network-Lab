@@ -34,7 +34,7 @@ public class Request {
                 parseSuccess = false;
                 return;
             }
-            String [] gets = line.split(" ");
+            String [] gets = line.split(" ");  // HTTP 协议第一行
             if (gets.length != 3) {
                 parseSuccess = false;
                 return;
