@@ -5,6 +5,9 @@
 #include "Global.h"
 #include "SRReceiver.h"
 
+#define LOG(args...) printf(args); \
+                     fprintf(window_fp, args)
+
 SRReceiver::SRReceiver(int seqLen, int cwnd) : SEQSPACE_(1 << seqLen), CWND_(cwnd), rcv_base_(1) {
     // 设置一个没有什么意义的初始回包
     sndpkt_.acknum = 0;
@@ -23,6 +26,19 @@ SRReceiver::SRReceiver(int seqLen, int cwnd) : SEQSPACE_(1 << seqLen), CWND_(cwn
 SRReceiver::~SRReceiver() {
     delete[] msgs_;
     delete[] received_;
+}
+
+void SRReceiver::printSlidingWindow() {
+    LOG("Receiver Window [!1 want, .1 acked] : [ ");
+    for (int i = 0; i < CWND_; i++) {
+        int idx = (rcv_base_ + i) % SEQSPACE_ % CWND_;
+        if (received_[idx]) {
+            LOG(".%d ", (rcv_base_ + i) % SEQSPACE_);
+        } else {
+            LOG("!%d ", (rcv_base_ + i) % SEQSPACE_);
+        }
+    }
+    LOG("]\n");
 }
 
 void SRReceiver::receive(const Packet &packet) {
@@ -52,21 +68,19 @@ void SRReceiver::receive(const Packet &packet) {
                 rcv_base_ = (rcv_base_ + 1) % SEQSPACE_;
             }
 
-
+            printSlidingWindow();
         }
-        // 构造新回包，并非累计确认
+
+        // 这里的 ack 不是 TCP 的累计确认，而是来啥确认啥
         sndpkt_.acknum = seq;
         sndpkt_.checksum = pUtils->calculateCheckSum(sndpkt_);
+
         // 回包
         pUtils->printPacket("接收方发送确认报文", sndpkt_);
         pns->sendToNetworkLayer(SENDER, sndpkt_);
     }
     else {
-        if (checkSum != packet.checksum) {
-            pUtils->printPacket("接收方没有正确收到发送方的报文，数据校验错误", packet);
-        } else {
-            pUtils->printPacket("接收方没有正确收到发送方的报文，报文序号不对", packet);
-        }
+        pUtils->printPacket("接收方没有正确收到发送方的报文，数据校验错误", packet);
         pUtils->printPacket("接收方重新发送上次的确认报文", sndpkt_);
         pns->sendToNetworkLayer(SENDER, sndpkt_);
     }

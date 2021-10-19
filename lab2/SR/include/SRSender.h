@@ -14,8 +14,7 @@ private:
     int base_;  // 基序号
     int nextSeqNum_;  // 下一个发包的序号
     Packet * sndpkts_;  // 发送窗口中的包
-    FILE * fp_;  // 打印滑动窗口的文件指针
-    bool *acked_;
+    bool *acked_;  // 发送窗口中的包是否确认了
 public:
     SRSender(int seqLen = 3, int cwnd = 4);
     virtual ~SRSender();
@@ -28,7 +27,7 @@ public:
     // 如果因为发送方处于等待正确确认状态而拒绝发送 Message，则返回 false
     bool send(const Message &message);
 
-    // 接受确认Ack，将被 NetworkServiceSimulator 调用
+    // 接受确认 Ack，将被 NetworkServiceSimulator 调用
     void receive(const Packet &ackPkt);
 
     // Timeout handler，将被 NetworkServiceSimulator 调用
